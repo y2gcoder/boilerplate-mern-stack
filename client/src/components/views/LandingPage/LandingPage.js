@@ -10,8 +10,14 @@ const { Meta } = Card;
 function LandingPage() {
 
     const [Products, setProducts] = useState([])
+    const [Skip, setSkip] = useState(0)
+    const [Limit, setLimit] = useState(8)
     useEffect(() => {
-        axios.post('/api/product/products')
+        const variables = {
+            skip: Skip,
+            limit: Limit
+        }
+        axios.post('/api/product/products', variables)
             .then(response => {
                 if (response.data.success) {
                     console.log(response.data)
@@ -21,6 +27,10 @@ function LandingPage() {
                 }
             })
     }, [])
+
+    const loadMoreHandler = () => {
+
+    }
 
     const renderCards = Products.map((product, index) => {
         
@@ -48,9 +58,9 @@ function LandingPage() {
                 {renderCards}
             </Row>
             
-
+            <br/><br/>
             <div style={{ display: 'flex', justifyContent: 'center' }} >
-                <button>더보기</button>
+                <button onClick={loadMoreHandler}>더보기</button>
             </div>
         </div>
     )
