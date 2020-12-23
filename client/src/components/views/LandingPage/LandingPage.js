@@ -4,7 +4,8 @@ import axios from 'axios'
 import { Icon, Col, Card, Row, Carousel } from 'antd'
 import ImageSlider from '../../utils/ImageSlider'
 import CheckBox from './Sections/CheckBox'
-import { continents } from './Sections/Datas'
+import RadioBox from './Sections/RadioBox'
+import { continents, price } from './Sections/Datas'
 
 const { Meta } = Card;
 
@@ -49,19 +50,20 @@ function LandingPage() {
         const body = {
             skip: skip,
             limit: Limit,
-            loadMore: true
+            loadMore: true,
+            filters: Filters,
         }
         getProducts(body);
         setSkip(skip);
     }
 
     const renderCards = Products.map((product, index) => {
-        
+
         return <Col lg={6} md={8} xs={24} key={index}>
             <Card
                 cover={<ImageSlider images={product.images} />}
             >
-                <Meta 
+                <Meta
                     title={product.title}
                     description={product.price}
                 />
@@ -79,9 +81,10 @@ function LandingPage() {
 
     }
     const handleFilters = (filters, category) => {
-        const newFilters = {...Filters};
+        const newFilters = { ...Filters };
         newFilters[category] = filters;
         showFilteredResults(newFilters);
+        setFilters(newFilters)
     }
 
     return (
@@ -90,18 +93,29 @@ function LandingPage() {
                 <h2>Let's Travel Anywhere <Icon type="rocket" /></h2>
             </div>
             {/* Filter */}
-            {/* Checkbox */}
-            <CheckBox list={continents} handleFilters={filters => handleFilters(filters, "continents")} />
-            {/* RadioBox */}
+            <Row gutter={[16, 16]}>
+                <Col lg={12} xs={24}>
+                    {/* Checkbox */}
+                    <CheckBox list={continents} handleFilters={filters => handleFilters(filters, "continents")} />
+                </Col>
+                <Col lg={12} xs={24}>
+                    {/* RadioBox */}
+                    <RadioBox list={price} 
+                        handleFilters={filters => handleFilters(filters, "price")}
+                    />
+                </Col>
+            </Row>
+
+
 
             {/* Search */}
             {/* Cards */}
             <Row gutter={[16, 16]}>
                 {renderCards}
             </Row>
-            
-            <br/><br/>
-            {PostSize >= Limit && 
+
+            <br /><br />
+            {PostSize >= Limit &&
                 <div style={{ display: 'flex', justifyContent: 'center' }} >
                     <button onClick={loadMoreHandler}>더보기</button>
                 </div>
