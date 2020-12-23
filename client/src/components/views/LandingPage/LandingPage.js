@@ -65,6 +65,10 @@ function LandingPage() {
         </Col>
     })
 
+    const handleFilters = () => {
+        
+    }
+
     return (
         <div style={{ width: '75%', margin: '3rem auto' }}>
             <div style={{ textAlign: 'center' }}>
@@ -72,7 +76,7 @@ function LandingPage() {
             </div>
             {/* Filter */}
             {/* Checkbox */}
-            <CheckBox list={continents} />
+            <CheckBox list={continents} handleFilters={filter => handleFilters(filters, "continents")} />
             {/* RadioBox */}
 
             {/* Search */}
