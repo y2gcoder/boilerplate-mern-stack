@@ -3,6 +3,8 @@ import { FaCode } from "react-icons/fa";
 import axios from 'axios'
 import { Icon, Col, Card, Row, Carousel } from 'antd'
 import ImageSlider from '../../utils/ImageSlider'
+import CheckBox from './Sections/CheckBox'
+import { continents } from './Sections/Datas'
 
 const { Meta } = Card;
 
@@ -69,6 +71,10 @@ function LandingPage() {
                 <h2>Let's Travel Anywhere <Icon type="rocket" /></h2>
             </div>
             {/* Filter */}
+            {/* Checkbox */}
+            <CheckBox list={continents} />
+            {/* RadioBox */}
+
             {/* Search */}
             {/* Cards */}
             <Row gutter={[16, 16]}>
