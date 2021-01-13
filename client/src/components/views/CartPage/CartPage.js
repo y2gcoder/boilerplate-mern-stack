@@ -15,10 +15,10 @@ function CartPage(props) {
                     cartItems.push(item.id);
                 });
 
-                dispatch(getCartItems(cartItems, props.user.dispatch.cart));
+                dispatch(getCartItems(cartItems, props.user.userData.cart));
             }
         }
-    }, [])
+    }, [props.user.userData])
 
     return (
         <div>
