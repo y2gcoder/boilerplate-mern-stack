@@ -5,6 +5,7 @@ const { Product } = require('../models/Product')
 const { Payment } = require('../models/Payment')
 
 const { auth } = require("../middleware/auth");
+const async = require('async')
 
 //=================================
 //             User
@@ -85,8 +86,8 @@ router.post("/addToCart", auth, (req, res) => {
         //상품이 이미 있을 때
         if (duplicate) {
             User.findOneAndUpdate(
-                { _id: req.user._id, "cart.id": req.body.productId }, 
-                { $inc : {"cart.$.quantity": 1} },
+                { _id: req.user._id, "cart.id": req.body.productId },
+                { $inc: { "cart.$.quantity": 1 } },
                 { new: true },
                 (err, userInfo) => {
                     if (err) return res.status(400).json({ success: false, err });
@@ -98,23 +99,23 @@ router.post("/addToCart", auth, (req, res) => {
         else {
             User.findOneAndUpdate(
                 { _id: req.user._id },
-                { 
-                    $push: { 
+                {
+                    $push: {
                         cart: {
-                            id: req.body.productId, 
-                            quantity: 1, 
-                            date: Date.now() 
-                        } 
-                    } 
+                            id: req.body.productId,
+                            quantity: 1,
+                            date: Date.now()
+                        }
+                    }
                 },
                 { new: true },
-                ( err, userInfo ) => {
+                (err, userInfo) => {
                     if (err) return res.status(400).json({ success: false, err });
                     res.status(200).send(userInfo.cart);
                 }
             )
         }
-        
+
     })
 });
 
@@ -134,7 +135,7 @@ router.get('/removeFromCart', auth, (req, res) => {
             const array = cart.map(item => {
                 return item.id;
             })
-            Product.find({ _id: { $in : array }})
+            Product.find({ _id: { $in: array } })
                 .populate('writer')
                 .exec((err, productInfo) => {
                     return res.status(200).json({
@@ -144,10 +145,10 @@ router.get('/removeFromCart', auth, (req, res) => {
                 });
         }
     )
-    
+
 });
 
-router.post('/sucessBuy', auth, (req, res) => {
+router.post('/successBuy', auth, (req, res) => {
     //1. User Collection History 필드 안에 간단한 결제 정보 넣어주기.
     const history = [];
     const transactionData = {};
@@ -175,23 +176,45 @@ router.post('/sucessBuy', auth, (req, res) => {
     //history 정보 저장
     User.findOneAndUpdate(
         { _id: req.user._id },
-        { $push: { history: history }, $set: { cart: [] }},
+        { $push: { history: history }, $set: { cart: [] } },
         { new: true },
         (err, user) => {
-            if (err) return res.json({ success: false, err })
+            if (err) return res.status(400).json({ success: false, err })
             //payment에다가 transaction 정보 저장
             const payment = new Payment(transactionData);
             payment.save((err, doc) => {
-                if (err) return res.json({ success: false, err });
+                if (err) return res.status(400).json({ success: false, err });
 
                 //3. Product Collection 안에 있는 Sold 필드 정보 업데이트 하기.
-                
+
+                //상품 당 몇 개의 quantity를 샀는지.
+                const products = [];
+                doc.product.forEach(item => {
+                    products.push({ id: item.id, quantity: item.quantity })
+                })
+
+                async.eachSeries(products, (item, callback) => {
+                    Product.update(
+                        { _id: item.id },
+                        {
+                            $inc: {
+                                "sold": item.quantity
+                            }
+                        },
+                        { new: false },
+                        callback
+                    )
+                }, (err) => {
+                    if (err) return res.status(400).json({ success: false, err })
+                    res.status(200).json({ success: true, cart: user.cart, cartDetail: [] })
+                })
+
 
             });
         }
     )
 
-    
+
 })
 
 module.exports = router;
